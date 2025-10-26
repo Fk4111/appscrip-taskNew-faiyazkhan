@@ -11,7 +11,10 @@ import Navbar from "../components/Navbar";
 import FilterSideBar from "@/components/FilterSideBar";
 
 // ✅ Importing SortDropdown (Recommended ▼, Price High-Low etc.)
-import SortDropdown from "@/components/SortDropdown";
+import SortDropdown from "../components/SortDropdown";
+
+//now we are importing footer here 
+import Footer from "../components/Footer";
 
 import { useState } from "react"; // 👈 Added for toggle-btn and sorting state
 
@@ -19,18 +22,14 @@ import { useState } from "react"; // 👈 Added for toggle-btn and sorting state
 // getServerSideProps() runs on the server before rendering the page
 // ye data yahan se fetch krega aur as a props paas krega hamare page componenets ko
 export async function getServerSideProps() {
-  // Fetching product data from Fake Store API (Mock API)
   const res = await fetch("https://fakestoreapi.com/products");
   const products = await res.json();
-
-  // Returning data as props for SSR
   return { props: { products } };
 }
 
 // MAIN COMPONENT
 // This is the default export which represents the Home Page
 export default function Home({ products }) {
-  // If API doesn't return products (empty state handling)
   if (!products || products.length === 0) {
     return <p style={{ textAlign: "center" }}>No products found!</p>;
   }
@@ -41,97 +40,95 @@ export default function Home({ products }) {
   // 👇 Added sorting state( yahan se maine sorting ka componenet bana kr logic likha so user can find products according to their needs)
   const [sortedProducts, setSortedProducts] = useState(products);
 
-// ✅ Sorting logic connected with dropdown
-const handleSortChange = (option) => {
-  let sorted = [];
+  // ✅ Added search query state (user search bar input ko store krega)
+  const [searchQuery, setSearchQuery] = useState("");
 
-  switch (option) {
-    case "LowToHigh":
-      sorted = [...products].sort((a, b) => a.price - b.price);
-      break;
+  // ✅ NEW: Added filter state to track checkbox selections
+  // ye state sidebar ke filters ko store karegi
+  const [filters, setFilters] = useState({
+    idealFor: [],
+    occasion: [],
+    material: [],
+  });
 
-    case "HighToLow":
-      sorted = [...products].sort((a, b) => b.price - a.price);
-      break;
+  // ✅ NEW: function to update filter state when user toggles any checkbox
+  // ye function FilterSideBar se trigger hota hai (child → parent via props)
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
 
-    case "Newest":
-      // Fake random shuffle for demo
-      sorted = [...products].sort(() => Math.random() - 0.5);
-      break;
+  // ✅ Sorting logic connected with dropdown
+  const handleSortChange = (option) => {
+    let sorted = [];
+    switch (option) {
+      case "LowToHigh":
+        sorted = [...products].sort((a, b) => a.price - b.price);
+        break;
+      case "HighToLow":
+        sorted = [...products].sort((a, b) => b.price - a.price);
+        break;
+      case "Newest":
+      case "Popular":
+        sorted = [...products].sort(() => Math.random() - 0.5);
+        break;
+      default:
+        sorted = [...products];
+        break;
+    }
+    setSortedProducts(sorted);
+  };
 
-    case "Popular":
-      // Fake random shuffle for demo
-      sorted = [...products].sort(() => Math.random() - 0.5);
-      break;
+  // ✅ handleSearch will update searchQuery when user types in Navbar
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
-    default:
-      // Recommended → original SSR order
-      sorted = [...products];
-      break;
-  }
+  // ✅ Filtered products based on search + filters + sorting
+  // yahan hum title ke through simulate kar rhe hain (FakeStoreAPI me gender/material data nahi hai)
+  const filteredProducts = sortedProducts.filter((product) => {
+    const title = product.title.toLowerCase();
+    const matchesSearch = title.includes(searchQuery.toLowerCase());
 
-  console.log("Sorting by:", option);
-  console.log("First 5 prices after sort:", sorted.slice(0, 5).map(p => p.price));
+    const matchesIdealFor =
+      filters.idealFor.length === 0 ||
+      filters.idealFor.some((f) => title.includes(f.toLowerCase()));
 
-  setSortedProducts(sorted); // ✅ Now React will detect new array and re-render
-};
+    const matchesOccasion =
+      filters.occasion.length === 0 ||
+      filters.occasion.some((f) => title.includes(f.toLowerCase()));
 
+    const matchesMaterial =
+      filters.material.length === 0 ||
+      filters.material.some((f) => title.includes(f.toLowerCase()));
+
+    // ✅ product tabhi show hoga jab sab conditions true ho
+    return matchesSearch && matchesIdealFor && matchesOccasion && matchesMaterial;
+  });
 
   return (
     <>
-      {/* SEO & Meta Information */}
       <Head>
-        {/* Title shown in browser tab */}
         <title>AppScrip Task - Product Listing Page</title>
-
-        {/* Basic meta tags for SEO */}
         <meta
           name="description"
           content="SSR Product listing page built with React + Next.js and Plain CSS"
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="robots" content="index, follow" />
-
-        {/* Open Graph tags (for better link previews on social media) */}
-        <meta property="og:title" content="All Products - AppScrip Task" />
-        <meta
-          property="og:description"
-          content="Browse products rendered with SSR using Next.js"
-        />
-        <meta property="og:type" content="website" />
-
-        {/* Schema Markup for SEO (Structured Data) */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "ProductCollection",
-              name: "All Products",
-              description:
-                "Product listing fetched from FakeStore API using Next.js SSR",
-            }),
-          }}
-        />
       </Head>
 
-      <Navbar />
+      {/* ✅ Navbar with search functionality connected */}
+      <Navbar onSearch={handleSearch} />
 
       {/* Main Page Content */}
       <main className="main-layout">
         {/* Sidebar (toggle visibility) */}
-        {showFilter && <FilterSideBar />}
+        {showFilter && <FilterSideBar onFilterChange={handleFilterChange} />}
 
         <div className="content-section">
           {/* ✅ Top Bar with Filter toggle + Count + Sort Dropdown */}
           <div className="top-bar">
             <div className="filter-toggle">
               <h3>Filters</h3>
-
-              {/* ✅ Product Count (dynamic) */}
-              <p className="product-count">{products.length} Items</p>
-
-              {/* ✅ Show / Hide button */}
+              <p className="product-count">{filteredProducts.length} Items</p>
               <span
                 className="toggle-btn"
                 onClick={() => setShowFilter(!showFilter)}
@@ -139,30 +136,24 @@ const handleSortChange = (option) => {
                 {showFilter ? "Hide" : "Show"}
               </span>
             </div>
-
-            {/* ✅ Sort Dropdown integrated here */}
             <SortDropdown onSortChange={handleSortChange} />
           </div>
 
-          {/* Page Heading (H1 is important for SEO) */}
-          <h1 style={{ textAlign: "center", marginTop: "20px" }}>
-            All Products
-          </h1>
-
-          {/* Sub-heading (H2 for SEO hierarchy) */}
+          <h1 style={{ textAlign: "center", marginTop: "20px" }}>All Products</h1>
           <h2 style={{ textAlign: "center", color: "#555" }}>
             Explore our curated collection
           </h2>
 
-          {/* Product Grid Section */}
+          {/* ✅ Product Grid Section (filtered + sorted results) */}
           <div className="product-grid">
-            {/* i am Mapping here through each product and rendering ProductCard component */}
-            {sortedProducts.map((p) => (
+            {filteredProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </div>
       </main>
+
+      <Footer/>
 
       {/* Inline CSS using styled-jsx --- Next.js built-in */}
       <style jsx>{`
@@ -171,11 +162,9 @@ const handleSortChange = (option) => {
           gap: 20px;
           padding: 10px 20px;
         }
-
         .content-section {
           flex: 1;
         }
-
         .top-bar {
           display: flex;
           align-items: center;
@@ -183,41 +172,34 @@ const handleSortChange = (option) => {
           border-bottom: 1px solid #eee;
           padding: 10px 0;
         }
-
         .filter-toggle {
           display: flex;
           align-items: center;
           gap: 15px;
         }
-
         .filter-toggle h3 {
           margin: 0;
           font-size: 1.1rem;
         }
-
         .toggle-btn {
           color: purple;
           font-weight: 500;
-          cursor: default;
+          cursor: pointer;
           user-select: none;
         }
-
         .product-count {
           color: #555;
           font-size: 0.9rem;
           cursor: default;
           user-select: none;
         }
-
         .product-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 20px;
           padding: 20px;
-          transition: all 0.3s ease; /* smooth animation for sorting */
+          transition: all 0.3s ease;
         }
-
-        /* Tablet View: 3 columns */
         @media (max-width: 1024px) {
           .main-layout {
             flex-direction: column;
@@ -226,8 +208,6 @@ const handleSortChange = (option) => {
             grid-template-columns: repeat(3, 1fr);
           }
         }
-
-        /* Mobile View: 2 columns */
         @media (max-width: 600px) {
           .product-grid {
             grid-template-columns: repeat(2, 1fr);

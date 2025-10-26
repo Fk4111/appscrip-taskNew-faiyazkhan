@@ -3,21 +3,50 @@
 
 import { useState } from "react";
 
-export default function Navbar() {
+// ✅ FIXED: destructure { onSearch } from props instead of plain onSearch
+export default function Navbar({ onSearch }) {
+
+  // ab hum yahan logic banayenge filter ke liye navbar me aur taake filter me koi shirts pr click kre to page render ho kar sirf shirts appear hon
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    // ✅ safe check before calling
+    if (typeof onSearch === "function") {
+      onSearch(value);  // yahan se parent ko send krenge request
+    }
+  };
+
+  // ✅ Optional: trigger search when pressing Enter
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && typeof onSearch === "function") {
+      onSearch(query);
+    }
+  };
+
   // ye state use hogi mobile menu toggle ke liye
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="navbar">
       {/* ye section logo ka hai left wala */}
-      
-        <div className="logo">
+
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={query}
+          onChange={handleSearch}
+          onKeyDown={handleKeyDown}  // ✅ trigger search on Enter ye function sirf enter pr hit krne ke liye search ko
+        />
+      </div>
+
+      <div className="logo">
         <a href="/" className="logo-link">
           AppScrip-Mart
         </a>
       </div>
-
-      
 
       {/* ye center ka section hai jo Menu links hoga */}
       <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
@@ -30,11 +59,6 @@ export default function Navbar() {
 
       {/* right section wale icons */}
       <div className="icons">
-        {/* Search Icon 🔍 */}
-        <button className="icon-btn" aria-label="Search">
-          🔍
-        </button>
-
         {/* user/profile */}
         <button className="icon-btn" aria-label="User Profile">
           👤
@@ -73,6 +97,25 @@ export default function Navbar() {
           z-index: 10;
         }
 
+        .search-bar input {
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          padding: 5px 10px;
+          font-size: 0.9rem;
+          transition: all 0.2s ease;
+        }
+
+        .search-bar input:focus {
+          outline: none;
+          border-color: #ce9178;
+          box-shadow: 0 0 5px rgba(206, 145, 120, 0.4);
+        }
+
+        .search-bar input:hover {
+          border-color: #ce9178;
+          box-shadow: 0 0 5px rgba(39, 4, 61, 0.3);
+        }
+
         .logo-link {
           font-weight: bold;
           font-size: 1.2rem;
@@ -88,7 +131,7 @@ export default function Navbar() {
         .nav-links a {
           text-decoration: none;
           color: #333;
-          font-size: 1.0rem;
+          font-size: 1rem;
           transition: color 0.3s;
         }
 
