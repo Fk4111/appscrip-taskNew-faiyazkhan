@@ -30,15 +30,11 @@ export async function getServerSideProps() {
 // MAIN COMPONENT
 // This is the default export which represents the Home Page
 export default function Home({ products }) {
-  if (!products || products.length === 0) {
-    return <p style={{ textAlign: "center" }}>No products found!</p>;
-  }
-
-  // 👇 here i Added toggle state for showing/hiding filter sidebar
+  // 👇 ✅ All Hooks must be at the top level — not inside any condition
   const [showFilter, setShowFilter] = useState(true);
 
   // 👇 Added sorting state( yahan se maine sorting ka componenet bana kr logic likha so user can find products according to their needs)
-  const [sortedProducts, setSortedProducts] = useState(products);
+  const [sortedProducts, setSortedProducts] = useState(products || []);
 
   // ✅ Added search query state (user search bar input ko store krega)
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,6 +101,11 @@ export default function Home({ products }) {
     return matchesSearch && matchesIdealFor && matchesOccasion && matchesMaterial;
   });
 
+  // ✅ Moved this check below hooks to avoid conditional hook error
+  if (!products || products.length === 0) {
+    return <p style={{ textAlign: "center" }}>No products found!</p>;
+  }
+
   return (
     <>
       <Head>
@@ -146,14 +147,18 @@ export default function Home({ products }) {
 
           {/* ✅ Product Grid Section (filtered + sorted results) */}
           <div className="product-grid">
-            {filteredProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {filteredProducts.length === 0 ? (
+              <p style={{ textAlign: "center" }}>No products match your filters.</p>
+            ) : (
+              filteredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))
+            )}
           </div>
         </div>
       </main>
 
-      <Footer/>
+      <Footer />
 
       {/* Inline CSS using styled-jsx --- Next.js built-in */}
       <style jsx>{`
