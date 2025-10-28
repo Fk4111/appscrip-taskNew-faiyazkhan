@@ -1,6 +1,7 @@
 // ye Navbar component hai - Display top navigation bar jisme Logo, Menu, and icons honge
 // ise pages/index.js me import karenge
 
+import Link from "next/link";
 import { useState } from "react";
 
 // ✅ FIXED: destructure { onSearch } from props instead of plain onSearch
@@ -50,11 +51,11 @@ export default function Navbar({ onSearch }) {
 
       {/* ye center ka section hai jo Menu links hoga */}
       <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
-        <a href="#">Shop</a>
-        <a href="#">Skills</a>
-        <a href="#">Stories</a>
-        <a href="#">About Us</a>
-        <a href="#">Contact Us</a>
+        <Link href="#">Shop</Link>
+        <Link href="#">Skills</Link>
+        <Link href="#">Stories</Link>
+        <Link href="#">About Us</Link>
+        <Link href="#">Contact Us</Link>
       </nav>
 
       {/* right section wale icons */}
@@ -128,14 +129,14 @@ export default function Navbar({ onSearch }) {
           gap: 25px;
         }
 
-        .nav-links a {
+        .nav-links :global(a) {
           text-decoration: none;
           color: #333;
           font-size: 1rem;
           transition: color 0.3s;
         }
 
-        .nav-links a:hover {
+        .nav-links :global(a:hover) {
           color: #ce9178;
         }
 
