@@ -44,8 +44,8 @@ export default function Navbar({ onSearch }) {
       </div>
 
       <div className="logo">
-        <Link href="/" className="logo-link">
-          AppScrip-Mart
+        <Link href="/" legacyBehavior >
+          <a className="logo-link"> AppScrip-Mart</a>
         </Link>
       </div>
 
