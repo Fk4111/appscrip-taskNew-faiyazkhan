@@ -1,5 +1,5 @@
 
-import Image from "next/image";
+import Image from "next/Image";
 export default function ProductCard({ product }){
     return (
         <div className="card">
