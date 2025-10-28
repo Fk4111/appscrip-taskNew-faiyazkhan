@@ -44,9 +44,9 @@ export default function Navbar({ onSearch }) {
       </div>
 
       <div className="logo">
-        <a href="/" className="logo-link">
+        <Link href="/" className="logo-link">
           AppScrip-Mart
-        </a>
+        </Link>
       </div>
 
       {/* ye center ka section hai jo Menu links hoga */}
