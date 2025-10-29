@@ -1,4 +1,13 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+This is a [Next.js](https://nextjs.org) project [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+
+## AppscripMart (FakeApi Store)/ FrontEnd
+A simple E-coomerce like store where you can shop add and buy your favourite products in one store.
+
+## Live Demo 
+🔗https://app.netlify.com/projects/appscrip-taskdone-faiyazkhan/configuration/general
+
+## Screen shots 
+![Home Screen](
 
 ## Getting Started
 
@@ -31,10 +40,11 @@ To learn more about Next.js, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You can check out [the Next.js GitHub repository](https://github.com/Fk4111/appscrip-taskNew-faiyazkhan.git
+) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deployed on Netlify
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The easiest way to deploy your Next.js app on Netlify is to connect your GitHub with Netlify and authorized the app and then make new project and deploy it believe me its that much simple. You can also deploy it on Vercel as per your convenience.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Check out my [deployment on Netlify](https://app.netlify.com/projects/appscrip-taskdone-faiyazkhan/configuration/general) for more details.
