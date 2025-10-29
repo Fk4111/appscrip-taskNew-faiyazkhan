@@ -7,10 +7,10 @@ A simple E-coomerce like store where you can shop add and buy your favourite pro
 🔗https://app.netlify.com/projects/appscrip-taskdone-faiyazkhan/configuration/general
 
 ## Screen shots 
-![Home Screen](Homescreen.png)
-![Show and Hide Button and Filters](HomeScreenHideSideBar.png)
-![hamburger icon and its wfunction](hamburgerMenu.png)
-![mobile Responsiveness](mobileFriendly.png)
+![Home Screen](assets/Homescreen.png)
+![Show and Hide Button and Filters](assets/HomeScreenHideSideBar.png)
+![hamburger icon and its wfunction](assets/hamburgerMenu.png)
+![mobile Responsiveness](assets/mobileFriendly.png)
 
 ## Getting Started
 
