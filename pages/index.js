@@ -22,10 +22,29 @@ import { useState } from "react"; // 👈 Added for toggle-btn and sorting state
 // getServerSideProps() runs on the server before rendering the page
 // ye data yahan se fetch krega aur as a props paas krega hamare page componenets ko
 export async function getServerSideProps() {
+  try {
   const res = await fetch("https://fakestoreapi.com/products");
-  const products = await res.json();
-  return { props: { products } };
+    // Check if response is OK and content-type is JSON
+    if (!res.ok) {
+      console.error("API returned:", res.status, res.statusText);
+      return { props: { products: [] } };
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      console.error("Invalid response type:", contentType);
+      return { props: { products: [] } };
+    }
+
+    const products = await res.json();
+    return { props: { products } };
+  } catch (err) {
+    console.error("SSR fetch error:", err);
+    return { props: { products: [] } };
+  }
 }
+
+
 
 // MAIN COMPONENT
 // This is the default export which represents the Home Page
