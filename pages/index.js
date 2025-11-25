@@ -16,54 +16,21 @@ import SortDropdown from "../components/SortDropdown";
 //now we are importing footer here 
 import Footer from "../components/Footer";
 
-import { useState } from "react"; // 👈 Added for toggle-btn and sorting state
+import { useEffect, useState } from "react"; // 👈 Added for toggle-btn and sorting state + client fetch
 
 
 
-// STATIC SITE GENERATION (SSG)
-// getStaticProps() runs at build time on Netlify
-// ye data build time par fetch karega, aur page ko props provide karega
-export async function getStaticProps() {
-  try {
-    const res = await fetch("https://fakestoreapi.com/products");
-
-    // Check if response is OK and content-type is JSON
-    if (!res.ok) {
-      console.error("API returned:", res.status, res.statusText);
-      return { props: { products: [] }, revalidate: 60 };
-    }
-
-    const contentType = res.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      console.error("Invalid response type:", contentType);
-      return { props: { products: [] }, revalidate: 60 };
-    }
-
-    const products = await res.json();
-
-    return { 
-      props: { products },
-      revalidate: 60  // ISR enabled – Netlify har 60sc pr regenerate krega ise 
-    };
-  } catch (err) {
-    console.error("SSG fetch error:", err);
-    return { 
-      props: { products: [] },
-      revalidate: 60 
-    };
-  }
-}
-
-
+// NOTE: We switched from server-side/static fetch to client-side fetch using useEffect
+// This avoids build-time 403 issues (Netlify build IP being blocked) and will fetch from user's browser
 
 // MAIN COMPONENT
 // This is the default export which represents the Home Page
-export default function Home({ products }) {
+export default function Home(initialProps) {
   // 👇 ✅ All Hooks must be at the top level — not inside any condition
   const [showFilter, setShowFilter] = useState(true);
 
   // 👇 Added sorting state( yahan se maine sorting ka componenet bana kr logic likha so user can find products according to their needs)
-  const [sortedProducts, setSortedProducts] = useState(products || []);
+  const [sortedProducts, setSortedProducts] = useState([]);
 
   // ✅ Added search query state (user search bar input ko store krega)
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,11 +43,57 @@ export default function Home({ products }) {
     material: [],
   });
 
+  // loading + products state for client-side fetch
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // ✅ NEW: function to update filter state when user toggles any checkbox
   // ye function FilterSideBar se trigger hota hai (child → parent via props)
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
   };
+
+  // Client-side fetch: runs in browser after page load
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchProducts() {
+      try {
+        setLoading(true);
+
+        // Optionally add headers if the API requires a UA or accepts only certain headers
+        const res = await fetch("https://fakestoreapi.com/products", {
+          headers: {
+            // 'User-Agent': 'MyApp/1.0', // browsers won't let you set User-Agent; leave commented
+            Accept: "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Client fetch error - status:", res.status, res.statusText);
+          setProducts([]);
+          return;
+        }
+
+        const data = await res.json();
+        if (!cancelled) {
+          setProducts(data);
+          setSortedProducts(data || []);
+        }
+      } catch (err) {
+        console.error("Client fetch exception:", err);
+        if (!cancelled) setProducts([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ✅ Sorting logic connected with dropdown
   const handleSortChange = (option) => {
@@ -110,8 +123,8 @@ export default function Home({ products }) {
 
   // ✅ Filtered products based on search + filters + sorting
   // yahan hum title ke through simulate kar rhe hain (FakeStoreAPI me gender/material data nahi hai)
-  const filteredProducts = sortedProducts.filter((product) => {
-    const title = product.title.toLowerCase();
+  const filteredProducts = (sortedProducts || []).filter((product) => {
+    const title = (product.title || "").toLowerCase();
     const matchesSearch = title.includes(searchQuery.toLowerCase());
 
     const matchesIdealFor =
@@ -130,7 +143,11 @@ export default function Home({ products }) {
     return matchesSearch && matchesIdealFor && matchesOccasion && matchesMaterial;
   });
 
-  // ✅ Moved this check below hooks to avoid conditional hook error
+  // show loading / no products UI
+  if (loading) {
+    return <p style={{ textAlign: "center" }}>Loading products...</p>;
+  }
+
   if (!products || products.length === 0) {
     return <p style={{ textAlign: "center" }}>No products found!</p>;
   }
