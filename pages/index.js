@@ -18,29 +18,39 @@ import Footer from "../components/Footer";
 
 import { useState } from "react"; // 👈 Added for toggle-btn and sorting state
 
-// SERVER-SIDE RENDERING (SSR)
-// getServerSideProps() runs on the server before rendering the page
-// ye data yahan se fetch krega aur as a props paas krega hamare page componenets ko
-export async function getServerSideProps() {
+
+
+// STATIC SITE GENERATION (SSG)
+// getStaticProps() runs at build time on Netlify
+// ye data build time par fetch karega, aur page ko props provide karega
+export async function getStaticProps() {
   try {
-  const res = await fetch("https://fakestoreapi.com/products");
+    const res = await fetch("https://fakestoreapi.com/products");
+
     // Check if response is OK and content-type is JSON
     if (!res.ok) {
       console.error("API returned:", res.status, res.statusText);
-      return { props: { products: [] } };
+      return { props: { products: [] }, revalidate: 60 };
     }
 
     const contentType = res.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
       console.error("Invalid response type:", contentType);
-      return { props: { products: [] } };
+      return { props: { products: [] }, revalidate: 60 };
     }
 
     const products = await res.json();
-    return { props: { products } };
+
+    return { 
+      props: { products },
+      revalidate: 60  // ISR enabled – Netlify har 60sc pr regenerate krega ise 
+    };
   } catch (err) {
-    console.error("SSR fetch error:", err);
-    return { props: { products: [] } };
+    console.error("SSG fetch error:", err);
+    return { 
+      props: { products: [] },
+      revalidate: 60 
+    };
   }
 }
 
